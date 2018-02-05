@@ -9,6 +9,7 @@ import scala.io.Source
 
 class ParserTests extends FlatSpec{
   "Parsers.simpleSpecParser" should "return a List[(String, String)] of specific length and content from example graph" in {
+    println(new File(".").getAbsolutePath())
     val parser = new Parsers.simpleSpecParser()
     val specFile: Path = FileSystems.getDefault.getPath(testProperties.simpleGraphPath)
 

@@ -13,7 +13,7 @@ class Ranker {
                           linkPairings: RDD[(String, Iterable[String])],
                           settlingIterations: Integer): RDD[(String, Double)] = {
     if(settlingIterations <= 0){
-      pageRanks
+      pageRanks.sortBy(_._2, false)
     } else {
       logger.info("Settling probabilities on iteration "+settlingIterations)
       val contributions: RDD[(String, Double)] = linkPairings.join(pageRanks).values.flatMap{ case (urls, rank) =>

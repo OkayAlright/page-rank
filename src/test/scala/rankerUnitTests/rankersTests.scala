@@ -19,13 +19,13 @@ class rankersTests extends FlatSpec {
 
   "sparkRanker.Ranker" should "example graph 1 should have url_1 as the highest rank" in {
     val ranker = new sparkRanker.Ranker()
-    val ranks = ranker.rankLinkCollection(testProperties.exampleGraph1).sortBy(_._2).reverse
+    val ranks = ranker.rankLinkCollection(testProperties.exampleGraph1)
     assert(ranks(0)._1 == "url_1", "Check to see that url_1 is the highest ranked node in the reference graph.")
   }
 
   "sparkRanker.Ranker" should "example graph 1 should have url_2 as the lowest rank" in {
     val ranker = new sparkRanker.Ranker()
-    val ranks = ranker.rankLinkCollection(testProperties.exampleGraph1).sortBy(_._2)
+    val ranks = ranker.rankLinkCollection(testProperties.exampleGraph1).reverse
     assert(ranks(0)._1 == "url_2", "Check to see that url_2 is the lowest ranked node in the reference graph.")
   }
 
@@ -36,7 +36,9 @@ class rankersTests extends FlatSpec {
     val graphNodes1 = rankSettle1.map(pair => pair._1)
     val graphNodes10 = rankSettle10.map(pair => pair._1)
 
-    assert(graphNodes1 == graphNodes10, "Check to see is the graphs are identical in vertexs")
+    assert(graphNodes1.sorted == graphNodes10.sorted, "Check to see is the graphs are identical in vertexs")
     assert(rankSettle1 != rankSettle10, "Check to see that the values of the graph have changes given more time to settle")
   }
+
+
 }
