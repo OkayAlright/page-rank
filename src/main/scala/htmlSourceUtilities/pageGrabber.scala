@@ -32,6 +32,7 @@ object pageGrabber {
   def getAllAnchorTagsRaw(page: browser.DocumentType): List[Element] = {
     try {
       val anchors: ElementQuery[Element] = page >> "a"
+      logger.info("Fetched "+anchors.size+" anchor tag")
       anchors.toList
     } catch {
       case noAnchors: NullPointerException => List()

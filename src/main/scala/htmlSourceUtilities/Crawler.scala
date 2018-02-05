@@ -16,7 +16,9 @@ class Crawler {
   }
 
   def crawl(links: List[String], depth: Integer): RDD[(String, String)] = {
+    logger.info("Crawling links "+links)
     if(depth <= 0){
+      logger.info("Reached end of crawl, now collecting...")
       sc.parallelize(links).map(link => {
         (link, link)
       })

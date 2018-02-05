@@ -21,6 +21,7 @@ object SimplePageRanker{
     var output: String = ""
 
     if(config.contains("useToyNotation")){
+      logger.info("Processing Toy Notation...")
       val specFile: Path = FileSystems.getDefault.getPath(config("uri"))
       val parsedSpec: List[(String, String)] = parser.parserToyGraph(specFile)
 
@@ -28,6 +29,7 @@ object SimplePageRanker{
       output = ranking.map(pair => "Page: "+pair._1+" Value: "+pair._2).mkString("\n")
 
     } else {
+      logger.info("Processing a real crawl...")
       var depth: Integer = 3
 
       try {
@@ -45,10 +47,10 @@ object SimplePageRanker{
     }
 
     if(config.contains("outputDest")) {
-
+      logger.info("Attempting to write out to "+config("outputDest"))
       try {
 
-        val file: File = new File(config.get("outputDest").get)
+        val file: File = new File(config("outputDest"))
         file.createNewFile()
         val outputFile: PrintWriter = new PrintWriter(file)
 
@@ -63,7 +65,6 @@ object SimplePageRanker{
     } else {
       logger.warning("No output destination set, skipping output...")
     }
-
 
     sparkWrapper.sparkContext.sc.stop()
     displayRanking(ranking)
