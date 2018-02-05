@@ -1,3 +1,4 @@
+import java.io._
 import java.nio.file.{FileSystems, Path}
 import java.util.logging.Logger
 
@@ -17,25 +18,53 @@ object SimplePageRanker{
 
     val config: Map[String, String] = parseArgs(args)
     var ranking: List[(String, Double)] = List.empty
+    var output: String = ""
 
     if(config.contains("useToyNotation")){
       val specFile: Path = FileSystems.getDefault.getPath(config("uri"))
       val parsedSpec: List[(String, String)] = parser.parserToyGraph(specFile)
+
       ranking = ranker.rankLinkCollection(parsedSpec)
+      output = ranking.map(pair => "Page: "+pair._1+" Value: "+pair._2).mkString("\n")
+
     } else {
       var depth: Integer = 3
-      if(config.contains("depth")){
-        try {
-          depth = config("depth").toInt
-        } catch {
-          case _: Throwable => {
-            logger.info("depth arg not parsable to integer, using default value of 3")
-          }
+
+      try {
+        depth = config("depth").toInt
+      } catch {
+        case _: Throwable => {
+          logger.info("depth arg not parsable to integer, using default value of 3")
         }
       }
+
       val linkDiagram: RDD[(String, String)] = crawler.crawler(config("uri"), depth)
+
       ranking = ranker.rankLinkCollection(linkDiagram.collect.toList)
+      output = ranking.map(pair => "Page: "+pair._1+" Value: "+pair._2).mkString("\n")
     }
+
+    if(config.contains("outputDest")) {
+
+      try {
+
+        val file: File = new File(config.get("outputDest").get)
+        file.createNewFile()
+        val outputFile: PrintWriter = new PrintWriter(file)
+
+        outputFile.write(output)
+        outputFile.close()
+
+      } catch {
+        case e: Throwable => {
+          logger.warning("Issue opening file. Will continue without writing out to file...")
+        }
+      }
+    } else {
+      logger.warning("No output destination set, skipping output...")
+    }
+
+
     sparkWrapper.sparkContext.sc.stop()
     displayRanking(ranking)
   }
@@ -48,12 +77,16 @@ object SimplePageRanker{
     })
   }
 
+  def displayUsage(): Unit ={
+    val usage: String = "Usage: $ pageRanker [--outputDest <path>] [--useToyNotation] ((--depth <num> fullURL) |filePath)"
+    println(usage)
+  }
 
   def parseArgs(args: Array[String]): Map[String, String] = {
-    val usage: String = "Usage: $ pageRanker [--useToyNotation] (fullURL |filePath)"
 
     if(args.length == 0){
-      println("No arguments supplied...\n"+usage)
+      println("No arguments supplied...\n")
+      displayUsage()
       System.exit(1)
     }
 
@@ -61,10 +94,12 @@ object SimplePageRanker{
       toBeProcessed match {
         case Nil => Option(config)
         case "--useToyNotation" :: tail => consumeAndSetArgs(tail, Map("useToyNotation" -> "True")++config)
-        case "--depth" :: num :: tail => consumeAndSetArgs(tail, Map("depth" -> num))
+        case "--outputDest" :: path :: tail => consumeAndSetArgs(tail, Map("outputDest" -> path)++config)
+        case "--depth" :: num :: tail => consumeAndSetArgs(tail, Map("depth" -> num)++config)
         case uri :: Nil => consumeAndSetArgs(toBeProcessed.tail, Map("uri" -> uri)++config)
         case garbage :: tail => {
-          println("Invalid argument " + garbage + "\n"+usage)
+          println("Invalid argument " + garbage)
+          displayUsage()
           None
         }
       }

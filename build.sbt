@@ -1,3 +1,5 @@
+import sbt._
+import Keys._
 
 name := "page-ranker-app"
 
@@ -24,3 +26,8 @@ libraryDependencies ++= Seq(
 // For tests
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.4"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.4" % "test"
+
+assemblyMergeStrategy in assembly := {
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case x => MergeStrategy.first
+}
