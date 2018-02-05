@@ -78,7 +78,7 @@ object SimplePageRanker{
   }
 
   def displayUsage(): Unit ={
-    val usage: String = "Usage: $ pageRanker [--outputDest <path>] [--useToyNotation] ((--depth <num> fullURL) |filePath)"
+    val usage: String = "Usage: $ pageRanker [--outputDest <path>] ((--depth <num> fullURL) | --useToyNotation filePath)"
     println(usage)
   }
 
